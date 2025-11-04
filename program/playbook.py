@@ -20,7 +20,7 @@ class Playbook:
         try:
             with open(filepath, "r") as file:
                 content = yaml.safe_load(file)
-        except yaml.composer.ComposerError as e:
+        except yaml.YAMLError as e:
             raise PlaybookException(f"Error while parsing the playbook file: {str(e)}")
 
         if len(content) != 1:

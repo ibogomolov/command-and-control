@@ -1,18 +1,9 @@
-import subprocess
+import sys
+
+from program.executor import PlaybookExecutor
+from program.playbook import Playbook
 
 if __name__ == '__main__':
-
-    HOST = "localhost"
-    # Ports are handled in ~/.ssh/config since we use OpenSSH
-    COMMAND = "uname -a"
-
-    ssh = subprocess.Popen(["ssh", "%s" % HOST, COMMAND],
-                           shell=False,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-    result = ssh.stdout.readlines()
-    if result == []:
-        error = ssh.stderr.readlines()
-        print("ERROR: %s" % error)
-    else:
-        print(result)
+    playbook = Playbook.from_file(sys.argv[1])
+    executor = PlaybookExecutor(playbook)
+    executor.execute()
