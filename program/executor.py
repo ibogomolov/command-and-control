@@ -7,7 +7,8 @@ from program.inventory import Inventory
 from program.playbook import Playbook, Task
 
 HOSTS_FILE_LOCATION = "/etc/playbook/hosts"
-TASK_TIMEOUT_IN_SECONDS = 30
+TASK_TIMEOUT_IN_SECONDS = 60
+SSH_TIMEOUT_IN_SECONDS = 15
 
 
 class PlaybookExecutor:
@@ -17,7 +18,7 @@ class PlaybookExecutor:
 
     @staticmethod
     def execute_task(task: Task, host: str) -> Tuple[int, str, str]:
-        ssh = subprocess.Popen(["ssh", host, task.command],
+        ssh = subprocess.Popen(["ssh", "-o", f"ConnectTimeout={SSH_TIMEOUT_IN_SECONDS}", host, task.command],
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,
@@ -34,15 +35,20 @@ class PlaybookExecutor:
         with ThreadPoolExecutor(max_workers=5) as executor:
             for task in self.playbook.tasks:
                 print(f"\n- Task '{task.name}'\n")
-                results = executor.map(partial(self.execute_task, task), hosts, timeout=TASK_TIMEOUT_IN_SECONDS)
-                for result in results:
-                    rc, host, out = result
-                    print(f"* {host}\n{'ERROR ' if rc else ''}{out.strip()}")
-                    if rc:
-                        is_error = True
 
-                if is_error:
-                    print("\nExecution aborted due to an error.")
+                try:
+                    results = executor.map(partial(self.execute_task, task), hosts, timeout=TASK_TIMEOUT_IN_SECONDS)
+                    for result in results:
+                        rc, host, out = result
+                        print(f"* {host}\n{'ERROR ' if rc else ''}{out.strip()}")
+                        if rc:
+                            is_error = True
+
+                    if is_error:
+                        print("\nExecution aborted due to an error.")
+                        exit(1)
+                except TimeoutError:
+                    print(f"\nExecution aborted due to a timeout. It took too long to execute the task.")
                     exit(1)
 
         print("\nExecution completed successfully!")
