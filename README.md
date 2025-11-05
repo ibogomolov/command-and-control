@@ -54,3 +54,18 @@ vim new_playbook.yaml
 ```shell
 python run_playbook.py new_playbook.yaml
 ```
+
+## Running the unit tests
+
+1. Activate project's virtualenv.
+
+```shell
+eval $(poetry env activate)
+```
+
+2. Run unit tests
+
+```shell
+python -m unittest discover tests
+```
+

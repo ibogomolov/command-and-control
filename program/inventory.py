@@ -1,5 +1,5 @@
 import configparser
-from typing import Dict, Iterable, List
+from typing import Dict, List
 
 
 class Inventory:
@@ -17,7 +17,7 @@ class Inventory:
         except configparser.DuplicateOptionError:
             raise InventoryException("Hosts file contains duplicate host in a group")
         except configparser.DuplicateSectionError:
-            raise InventoryException("Hosts file contains duplicate groups")
+            raise InventoryException("Hosts file contains duplicate group")
         except configparser.MissingSectionHeaderError:
             raise InventoryException("Hosts file contains hosts declared outside of a group")
         except configparser.ParsingError as e:
@@ -31,7 +31,7 @@ class Inventory:
 
         return inventory
 
-    def get_hosts_by_group(self, group: str) -> Iterable[str]:
+    def get_hosts_by_group(self, group: str) -> List[str]:
         if group not in self._hosts:
             raise InventoryException(f"Group '{group}' is absent from the hosts file")
         elif len(self._hosts[group]) == 0:
